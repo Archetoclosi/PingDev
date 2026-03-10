@@ -54,12 +54,12 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage({bool refocus = false}) {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
     _chatService.sendMessage(widget.chatId, text, _myId);
     _controller.clear();
-    _focusNode.requestFocus();
+    if (refocus) _focusNode.requestFocus();
   }
 
   Future<void> _sendImage() async {
@@ -506,14 +506,18 @@ class _ChatScreenState extends State<ChatScreen> {
                     vertical: 10,
                   ),
                 ),
-                onSubmitted: (_) => _sendMessage(),
+                onSubmitted: (_) => _sendMessage(refocus: true),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.send, color: Colors.white.withValues(alpha: 0.6)),
-            onPressed: _sendMessage,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _sendMessage,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Icon(Icons.send, color: Colors.white.withValues(alpha: 0.6)),
+            ),
           ),
         ],
       ),

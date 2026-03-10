@@ -5,9 +5,6 @@ import '../services/auth_service.dart';
 import 'chat_screen.dart';
 import '../theme/app_colors.dart';
 import '../widgets/whats_new_sheet.dart';
-import '../widgets/update_sheet.dart';
-import '../services/update_service.dart';
-import 'package:web/web.dart' as web;
 
 String _formatChatDate(DateTime date) {
   final now = DateTime.now();
@@ -38,21 +35,13 @@ class ChatListScreen extends StatefulWidget {
 class _ChatListScreenState extends State<ChatListScreen> {
   final AuthService _authService = AuthService();
   final ChatService _chatService = ChatService();
-  final UpdateService _updateService = UpdateService();
-  UpdateCheckResult? _updateResult;
 
   @override
   void initState() {
     super.initState();
-    _checkForUpdates();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) WhatsNewSheet.showIfNew(context);
     });
-  }
-
-  Future<void> _checkForUpdates() async {
-    final result = await _updateService.checkForUpdate();
-    if (mounted) setState(() => _updateResult = result);
   }
 
   String _getChatId(String userId1, String userId2) {
@@ -106,50 +95,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
           Row(
             children: [
-              Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.system_update, color: Colors.white),
-                    tooltip: 'Updates',
-                    onPressed: () async {
-                      final result = _updateResult ??
-                          UpdateCheckResult(
-                            updateAvailable: false,
-                            currentVersion: '',
-                            remoteVersion: '',
-                          );
-                      final shouldReload = await showModalBottomSheet<bool>(
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        isScrollControlled: true,
-                        builder: (_) => UpdateSheet(initialResult: result),
-                      );
-                      if (shouldReload == true && context.mounted) {
-                        web.window.location.reload();
-                      }
-                      // Refresh dot state after sheet closes
-                      _checkForUpdates();
-                    },
-                  ),
-                  if (_updateResult?.updateAvailable == true)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: Colors.orangeAccent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF1A1A2E),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
               IconButton(
                 icon: const Icon(Icons.new_releases_outlined, color: Colors.white),
                 tooltip: "What's New",
