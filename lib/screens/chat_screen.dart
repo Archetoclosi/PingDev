@@ -54,12 +54,12 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  void _sendMessage({bool refocus = false}) {
+  void _sendMessage() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
     _chatService.sendMessage(widget.chatId, text, _myId);
     _controller.clear();
-    if (refocus) _focusNode.requestFocus();
+    _focusNode.requestFocus();
   }
 
   Future<void> _sendImage() async {
@@ -506,7 +506,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     vertical: 10,
                   ),
                 ),
-                onSubmitted: (_) => _sendMessage(refocus: true),
+                onSubmitted: (_) => _sendMessage(),
               ),
             ),
           ),
