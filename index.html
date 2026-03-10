@@ -33,71 +33,17 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
   <script>
-    // --- PWA update detection via custom service worker ---
-    window._pingUpdateAvailable = false;
-    window._pingWaitingSW = null;
-    window._pingRegistration = null;
-
-    window._pingCheckUpdate = function() {
-      return !!window._pingUpdateAvailable;
-    };
-
-    window._pingApplyUpdate = function() {
-      if (window._pingWaitingSW) {
-        window._pingWaitingSW.postMessage('SKIP_WAITING');
-      }
-    };
-
-    window._pingForceCheck = function() {
-      if (window._pingRegistration) {
-        return window._pingRegistration.update();
-      }
-      return Promise.resolve();
-    };
-
-    function _handleNewSW(sw) {
-      if (sw.state === 'installed') {
-        window._pingUpdateAvailable = true;
-        window._pingWaitingSW = sw;
-        return;
-      }
-      sw.addEventListener('statechange', function() {
-        if (sw.state === 'installed') {
-          window._pingUpdateAvailable = true;
-          window._pingWaitingSW = sw;
-        }
+    // On every app open: clear all caches and unregister old service workers
+    // so the browser always loads the latest version from the server.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        registrations.forEach(function(reg) { reg.unregister(); });
       });
     }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(function(reg) {
-        window._pingRegistration = reg;
-
-        // Already a waiting SW (e.g. from a previous visit)
-        if (reg.waiting) {
-          window._pingUpdateAvailable = true;
-          window._pingWaitingSW = reg.waiting;
-        }
-
-        // Detect new SW installing
-        reg.addEventListener('updatefound', function() {
-          var newSW = reg.installing;
-          if (newSW) _handleNewSW(newSW);
-        });
-
-        // When the new SW activates, reload to load the new version
-        navigator.serviceWorker.addEventListener('controllerchange', function() {
-          window.location.reload();
-        });
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        names.forEach(function(name) { caches.delete(name); });
       });
     }
   </script>

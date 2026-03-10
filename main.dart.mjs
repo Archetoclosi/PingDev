@@ -975,9 +975,6 @@ class CompiledApp {
       _13703: x0 => x0.message,
       _13704: x0 => x0.code,
       _13706: x0 => x0.customData,
-      _13707: () => globalThis._pingCheckUpdate(),
-      _13708: () => globalThis._pingApplyUpdate(),
-      _13709: () => globalThis._pingForceCheck(),
 
     };
 
