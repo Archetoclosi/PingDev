@@ -25,6 +25,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   final ChatService _chatService = ChatService();
   final ItemScrollController _itemScrollController = ItemScrollController();
   int _lastKnownMessageCount = 0;
@@ -58,6 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
     _chatService.sendMessage(widget.chatId, text, _myId);
     _controller.clear();
+    _focusNode.requestFocus();
   }
 
   Future<void> _sendImage() async {
@@ -490,6 +492,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               child: TextField(
                 controller: _controller,
+                focusNode: _focusNode,
                 style: const TextStyle(color: Colors.white),
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
@@ -510,9 +513,7 @@ class _ChatScreenState extends State<ChatScreen> {
           const SizedBox(width: 8),
           IconButton(
             icon: Icon(Icons.send, color: Colors.white.withValues(alpha: 0.6)),
-            onPressed: () {
-              (_) => _sendMessage();
-            },
+            onPressed: _sendMessage,
           ),
         ],
       ),
