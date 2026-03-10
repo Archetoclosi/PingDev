@@ -34,16 +34,33 @@
 </head>
 <body>
   <script>
-    // On every app open: clear all caches and unregister old service workers
-    // so the browser always loads the latest version from the server.
+    // When a new service worker is found (new deploy), activate it
+    // immediately and reload once to load the new version.
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        registrations.forEach(function(reg) { reg.unregister(); });
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        names.forEach(function(name) { caches.delete(name); });
+      navigator.serviceWorker.getRegistration().then(function(reg) {
+        if (!reg) return;
+        // If there's already a waiting SW, activate it now
+        if (reg.waiting) {
+          reg.waiting.postMessage({type: 'SKIP_WAITING'});
+        }
+        // Listen for future new SW installations
+        reg.addEventListener('updatefound', function() {
+          var newSW = reg.installing;
+          if (!newSW) return;
+          newSW.addEventListener('statechange', function() {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              newSW.postMessage({type: 'SKIP_WAITING'});
+            }
+          });
+        });
+        // When the new SW takes control, reload once
+        var refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
       });
     }
   </script>
